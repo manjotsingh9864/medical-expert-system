@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Expert System - AI Diagnosis</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { Activity, Thermometer, Wind, Droplets, Brain, AlertCircle, CheckCircle, FileText, User, Stethoscope, Zap, TrendingUp } = (() => {
+            const iconProps = { xmlns: "http://www.w3.org/2000/svg", width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+            
+            return {
+                Activity: (props) => <svg {...iconProps} {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+                Thermometer: (props) => <svg {...iconProps} {...props}><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>,
+                Wind: (props) => <svg {...iconProps} {...props}><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>,
+                Droplets: (props) => <svg {...iconProps} {...props}><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>,
+                Brain: (props) => <svg {...iconProps} {...props}><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg>,
+                AlertCircle: (props) => <svg {...iconProps} {...props}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+                CheckCircle: (props) => <svg {...iconProps} {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+                FileText: (props) => <svg {...iconProps} {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+                User: (props) => <svg {...iconProps} {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+                Stethoscope: (props) => <svg {...iconProps} {...props}><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>,
+                Zap: (props) => <svg {...iconProps} {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+                TrendingUp: (props) => <svg {...iconProps} {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            };
+        })();
+
+        const MedicalExpertSystem = () => {
+            const [currentStep, setCurrentStep] = useState('welcome');
+            const [patientId, setPatientId] = useState('');
+            const [symptoms, setSymptoms] = useState({});
+            const [diagnosis, setDiagnosis] = useState(null);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+            const [progress, setProgress] = useState(0);
+
+            const symptomsData = [
+                { id: 1, name: 'Fever', description: 'Rise in body temperature above normal', icon: Thermometer, color: 'from-red-500 to-orange-500' },
+                { id: 2, name: 'Chills', description: 'Sensation of coldness with shivering', icon: Wind, color: 'from-blue-400 to-cyan-500' },
+                { id: 3, name: 'Sweating', description: 'Excessive sweating often following fever', icon: Droplets, color: 'from-blue-500 to-indigo-500' },
+                { id: 4, name: 'Headache', description: 'Continuous pain in the head or forehead', icon: Brain, color: 'from-purple-500 to-pink-500' },
+                { id: 5, name: 'Fatigue', description: 'Feeling of tiredness or weakness', icon: Activity, color: 'from-yellow-500 to-orange-500' },
+                { id: 6, name: 'Abdominal Pain', description: 'Discomfort or cramps in the stomach area', icon: AlertCircle, color: 'from-red-500 to-pink-500' },
+                { id: 7, name: 'Loss of Appetite', description: 'Reduced desire to eat', icon: TrendingUp, color: 'from-green-500 to-teal-500' },
+                { id: 8, name: 'Diarrhea', description: 'Frequent loose or watery bowel movements', icon: Droplets, color: 'from-cyan-500 to-blue-500' },
+                { id: 9, name: 'Body Pain', description: 'Pain in muscles and joints', icon: Zap, color: 'from-orange-500 to-red-500' },
+                { id: 10, name: 'Nausea', description: 'Feeling of sickness or urge to vomit', icon: AlertCircle, color: 'from-green-400 to-emerald-500' },
+            ];
+
+            const rules = [
+                { ruleId: 1, diseaseId: 1, symptomId: 1, condition: 'YES' },
+                { ruleId: 2, diseaseId: 1, symptomId: 2, condition: 'YES' },
+                { ruleId: 3, diseaseId: 1, symptomId: 3, condition: 'YES' },
+                { ruleId: 4, diseaseId: 1, symptomId: 5, condition: 'OPTIONAL' },
+                { ruleId: 5, diseaseId: 1, symptomId: 9, condition: 'OPTIONAL' },
+                { ruleId: 6, diseaseId: 2, symptomId: 1, condition: 'YES' },
+                { ruleId: 7, diseaseId: 2, symptomId: 4, condition: 'YES' },
+                { ruleId: 8, diseaseId: 2, symptomId: 6, condition: 'YES' },
+                { ruleId: 9, diseaseId: 2, symptomId: 7, condition: 'YES' },
+                { ruleId: 10, diseaseId: 2, symptomId: 8, condition: 'OPTIONAL' },
+                { ruleId: 11, diseaseId: 2, symptomId: 10, condition: 'OPTIONAL' },
+            ];
+
+            const diseases = {
+                1: {
+                    name: 'Malaria',
+                    description: 'A mosquito-borne disease caused by Plasmodium parasite, resulting in fever and chills.',
+                    recommendation: 'Get a malaria blood test; take prescribed anti-malarial drugs; rest and stay hydrated.',
+                    color: 'from-red-600 to-orange-600',
+                    icon: '🦟'
+                },
+                2: {
+                    name: 'Typhoid',
+                    description: 'A bacterial infection caused by Salmonella typhi, spreading through contaminated food and water.',
+                    recommendation: 'Get a Widal test; take antibiotics as prescribed; maintain hygiene and hydration.',
+                    color: 'from-purple-600 to-pink-600',
+                    icon: '🦠'
+                }
+            };
+
+            const toggleSymptom = (id) => {
+                setSymptoms(prev => ({
+                    ...prev,
+                    [id]: !prev[id]
+                }));
+            };
+
+            const analyzeDiagnosis = () => {
+                setIsAnalyzing(true);
+                setProgress(0);
+                
+                const interval = setInterval(() => {
+                    setProgress(prev => {
+                        if (prev >= 100) {
+                            clearInterval(interval);
+                            return 100;
+                        }
+                        return prev + 10;
+                    });
+                }, 150);
+
+                setTimeout(() => {
+                    const results = [];
+                    
+                    [1, 2].forEach(diseaseId => {
+                        const diseaseRules = rules.filter(r => r.diseaseId === diseaseId);
+                        const requiredRules = diseaseRules.filter(r => r.condition === 'YES');
+                        const optionalRules = diseaseRules.filter(r => r.condition === 'OPTIONAL');
+                        
+                        const requiredMatches = requiredRules.filter(r => symptoms[r.symptomId]).length;
+                        const optionalMatches = optionalRules.filter(r => symptoms[r.symptomId]).length;
+                        
+                        const requiredScore = requiredRules.length > 0 
+                            ? (requiredMatches / requiredRules.length) * 100 
+                            : 0;
+                        
+                        const optionalScore = optionalRules.length > 0
+                            ? (optionalMatches / optionalRules.length) * 50
+                            : 0;
+                        
+                        const totalScore = requiredScore + optionalScore;
+                        
+                        if (requiredMatches === requiredRules.length) {
+                            results.push({
+                                diseaseId,
+                                score: totalScore,
+                                confidence: requiredScore + (optionalScore / 2),
+                                requiredMatches,
+                                optionalMatches,
+                                totalRequired: requiredRules.length,
+                                totalOptional: optionalRules.length
+                            });
+                        }
+                    });
+                    
+                    results.sort((a, b) => b.score - a.score);
+                    
+                    setDiagnosis(results.length > 0 ? results[0] : null);
+                    setIsAnalyzing(false);
+                    setCurrentStep('results');
+                }, 2000);
+            };
+
+            const resetSystem = () => {
+                setCurrentStep('welcome');
+                setPatientId('');
+                setSymptoms({});
+                setDiagnosis(null);
+                setProgress(0);
+            };
+
+            const selectedCount = Object.values(symptoms).filter(Boolean).length;
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 md:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-8 relative">
+                            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                                <Stethoscope className="w-64 h-64 text-white" style={{width: '16rem', height: '16rem'}} />
+                            </div>
+                            <div className="relative">
+                                <div className="inline-flex items-center gap-3 mb-4 px-6 py-3 bg-white/10 backdrop-blur-lg rounded-full border border-white/20">
+                                    <Activity className="w-6 h-6 text-cyan-400 animate-pulse" />
+                                    <span className="text-cyan-400 font-semibold">AI-Powered Healthcare</span>
+                                </div>
+                                <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
+                                    Medical Expert System
+                                </h1>
+                                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                                    Advanced AI diagnosis for Malaria & Typhoid detection
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Welcome Screen */}
+                        {currentStep === 'welcome' && (
+                            <div className="max-w-2xl mx-auto">
+                                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl">
+                                    <div className="text-center mb-8">
+                                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full mb-6 shadow-lg">
+                                            <User className="w-12 h-12 text-white" />
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-white mb-3">Welcome to Diagnosis</h2>
+                                        <p className="text-gray-300">Enter patient ID to begin symptom assessment</p>
+                                    </div>
+                                    
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                Patient ID
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={patientId}
+                                                onChange={(e) => setPatientId(e.target.value)}
+                                                placeholder="Enter patient ID (e.g., P001)"
+                                                className="w-full px-6 py-4 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                                            />
+                                        </div>
+                                        
+                                        <button
+                                            onClick={() => patientId && setCurrentStep('symptoms')}
+                                            disabled={!patientId}
+                                            className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                                        >
+                                            Start Diagnosis
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Symptoms Selection */}
+                        {currentStep === 'symptoms' && (
+                            <div className="space-y-6">
+                                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-white mb-1">Symptom Assessment</h2>
+                                            <p className="text-gray-300">Patient ID: <span className="font-semibold text-cyan-400">{patientId}</span></p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-3xl font-bold text-white">{selectedCount}</div>
+                                            <div className="text-sm text-gray-400">symptoms selected</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        {symptomsData.map((symptom) => {
+                                            const Icon = symptom.icon;
+                                            const isSelected = symptoms[symptom.id];
+                                            
+                                            return (
+                                                <button
+                                                    key={symptom.id}
+                                                    onClick={() => toggleSymptom(symptom.id)}
+                                                    className={`group relative p-6 rounded-2xl border-2 transition-all transform hover:scale-105 active:scale-95 ${
+                                                        isSelected
+                                                            ? 'bg-gradient-to-br ' + symptom.color + ' border-white/30 shadow-lg'
+                                                            : 'bg-white/5 border-white/10 hover:border-white/30'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-4">
+                                                        <div className={`p-3 rounded-xl ${isSelected ? 'bg-white/20' : 'bg-white/10'}`}>
+                                                            <Icon className="w-6 h-6 text-white" />
+                                                        </div>
+                                                        <div className="flex-1 text-left">
+                                                            <h3 className="text-lg font-semibold text-white mb-1">
+                                                                {symptom.name}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-300 opacity-90">
+                                                                {symptom.description}
+                                                            </p>
+                                                        </div>
+                                                        {isSelected && (
+                                                            <CheckCircle className="w-6 h-6 text-white absolute top-4 right-4" />
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={resetSystem}
+                                            className="flex-1 py-4 px-6 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all border border-white/20"
+                                        >
+                                            Reset
+                                        </button>
+                                        <button
+                                            onClick={analyzeDiagnosis}
+                                            disabled={selectedCount === 0}
+                                            className="flex-1 py-4 px-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                                        >
+                                            Analyze Diagnosis
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Results */}
+                        {currentStep === 'results' && (
+                            <div className="max-w-4xl mx-auto space-y-6">
+                                {diagnosis ? (
+                                    <>
+                                        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20">
+                                            <div className="text-center mb-8">
+                                                <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mb-6 shadow-lg">
+                                                    <CheckCircle className="w-12 h-12 text-white" />
+                                                </div>
+                                                <h2 className="text-3xl font-bold text-white mb-2">Diagnosis Complete</h2>
+                                                <p className="text-gray-300">AI analysis for Patient {patientId}</p>
+                                            </div>
+                                            
+                                            <div className={`bg-gradient-to-br ${diseases[diagnosis.diseaseId].color} rounded-2xl p-8 mb-6 shadow-xl`}>
+                                                <div className="flex items-center gap-4 mb-6">
+                                                    <div className="text-6xl">{diseases[diagnosis.diseaseId].icon}</div>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-4xl font-bold text-white mb-2">
+                                                            {diseases[diagnosis.diseaseId].name}
+                                                        </h3>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="px-4 py-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                                                <span className="text-sm font-semibold text-white">
+                                                                    Confidence: {diagnosis.confidence.toFixed(1)}%
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-4">
+                                                    <h4 className="text-lg font-semibold text-white mb-2">Description</h4>
+                                                    <p className="text-white/90">{diseases[diagnosis.diseaseId].description}</p>
+                                                </div>
+                                                
+                                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                                                    <h4 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                                                        <FileText className="w-5 h-5" />
+                                                        Recommendations
+                                                    </h4>
+                                                    <p className="text-white/90">{diseases[diagnosis.diseaseId].recommendation}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                                                    <div className="text-sm text-gray-400 mb-1">Required Symptoms</div>
+                                                    <div className="text-2xl font-bold text-white">
+                                                        {diagnosis.requiredMatches}/{diagnosis.totalRequired}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                                                    <div className="text-sm text-gray-400 mb-1">Optional Symptoms</div>
+                                                    <div className="text-2xl font-bold text-white">
+                                                        {diagnosis.optionalMatches}/{diagnosis.totalOptional}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={resetSystem}
+                                                className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                                            >
+                                                New Diagnosis
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 text-center">
+                                        <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                                        <h3 className="text-2xl font-bold text-white mb-2">No Diagnosis Found</h3>
+                                        <p className="text-gray-300 mb-6">
+                                            The symptoms provided do not match any disease patterns in our database.
+                                        </p>
+                                        <button
+                                            onClick={resetSystem}
+                                            className="py-3 px-8 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 transition-all"
+                                        >
+                                            Try Again
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Analyzing Animation */}
+                        {isAnalyzing && (
+                            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+                                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 max-w-md w-full mx-4">
+                                    <div className="text-center">
+                                        <div className="relative w-24 h-24 mx-auto mb-6">
+                                            <div className="absolute inset-0 border-4 border-cyan-500/30 rounded-full"></div>
+                                            <div className="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin"></div>
+                                            <Brain className="w-12 h-12 text-cyan-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-white mb-3">Analyzing Symptoms</h3>
+                                        <p className="text-gray-300 mb-6">AI is processing your data...</p>
+                                        <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300 rounded-full"
+                                                style={{ width: `${progress}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="text-cyan-400 font-semibold mt-3">{progress}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<MedicalExpertSystem />, document.getElementById('root'));
+    </script>
+</body>
+</html>
